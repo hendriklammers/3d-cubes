@@ -20,7 +20,7 @@ function initScene() {
     height / 2,
     height / -2,
     1,
-    1000
+    2000
   )
   camera.position.z = -500
   camera.updateProjectionMatrix()
@@ -38,6 +38,7 @@ function initScene() {
 
 function createCubes() {
   const cubeSize = 100
+  const spaceX = Math.sqrt(cubeSize * cubeSize + cubeSize * cubeSize)
   const numCubesX = Math.ceil(window.innerWidth / cubeSize)
   const numCubesY = Math.ceil(window.innerHeight / cubeSize)
   for (let x = 0; x < numCubesX; x++) {
@@ -46,8 +47,12 @@ function createCubes() {
         new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize),
         new THREE.MeshNormalMaterial()
       )
-      mesh.position.x = (x + 0.5 - numCubesX / 2) * cubeSize
-      mesh.position.y = (y + 0.5 - numCubesY / 2) * cubeSize
+      const offsetX = y % 2 === 0 ? spaceX / 2 : 0
+      mesh.position.x = (x + 0.5 - numCubesX / 2) * spaceX + offsetX
+      // TODO: Calculate actual height instead of using hardcoded 121
+      mesh.position.y = (y + 0.5 - numCubesY / 2) * 121
+      mesh.rotation.y = THREE.Math.DEG2RAD * 45
+      mesh.rotation.x = THREE.Math.DEG2RAD * 45
       cubes.push(mesh)
       scene.add(mesh)
     }
@@ -57,10 +62,11 @@ function createCubes() {
 
 function render() {
   if (!isPaused) {
-    cubes.forEach(cube => {
-      cube.rotation.x += 0.01
-      cube.rotation.y -= 0.01
-    })
+    // const rotation = Math.abs(Math.sin(timestamp * 0.001)) * Math.PI / 2
+    // cubes.forEach(cube => {
+    //   cube.rotation.x += 0.01
+    //   cube.rotation.y += 0.01
+    // })
     renderer.render(scene, camera)
   }
   requestAnimationFrame(render)
