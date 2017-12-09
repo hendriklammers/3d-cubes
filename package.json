@@ -4,11 +4,12 @@
   "description": "Playing with 3d cubes in three.js",
   "main": "src/index.js",
   "scripts": {
-    "build": "npm run lint && webpack",
+    "build": "yarn run lint && webpack",
+    "clean": "rm -rf public/dist",
     "lint": "eslint src --ext .js",
-    "start": "npm run watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "webpack-dev-server"
+    "start": "yarn run watch",
+    "watch": "webpack-dev-server",
+    "deploy": "yarn run clean && mkdir -p public/dist && yarn run build"
   },
   "author": "Hendrik Lammers (www.hendriklammers.com)",
   "license": "MIT",
