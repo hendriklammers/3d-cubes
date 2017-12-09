@@ -6,5 +6,7 @@
   "libs": [
     "browser"
   ],
-  "loadEagerly": []
+  "loadEagerly": [
+    "./node_modules/three/build/three.js"
+  ]
 }
