@@ -5,7 +5,6 @@ let camera
 let scene
 let renderer
 let cubes = []
-let isPaused = false
 let windowWidth = window.innerWidth
 let windowHeight = window.innerHeight
 
@@ -22,7 +21,7 @@ function initScene() {
     1,
     2000
   )
-  camera.position.z = -500
+  camera.position.z = -1000
   camera.updateProjectionMatrix()
   camera.lookAt(scene.position)
   scene.add(camera)
@@ -42,8 +41,6 @@ function createCubes() {
   const spaceY = cubeSize * 1.2 // Approximation...
   const numCubesX = Math.ceil(windowWidth / cubeSize)
   const numCubesY = Math.ceil(windowHeight / cubeSize)
-  console.log('numCubesX', numCubesX)
-  console.log('numCubesY', numCubesY)
   for (let x = 0; x < numCubesX; x++) {
     for (let y = 0; y < numCubesY; y++) {
       const mesh = new THREE.Mesh(
@@ -63,16 +60,13 @@ function createCubes() {
 }
 
 function render() {
-  if (!isPaused) {
-    cubes.forEach(cube => {
-      if (cube.userData.animate) {
-        cube.rotation.x += 0.01
-        cube.rotation.y += 0.01
-      }
-    })
-    renderer.render(scene, camera)
-  }
   requestAnimationFrame(render)
+  cubes.forEach(cube => {
+    if (cube.userData.animate) {
+      cube.position.add(new THREE.Vector3(0, -1, -1))
+    }
+  })
+  renderer.render(scene, camera)
 }
 
 function handleWindowResize() {
@@ -84,18 +78,9 @@ function handleWindowResize() {
   camera.bottom = windowHeight / -2
   camera.updateProjectionMatrix()
   renderer.setSize(windowWidth, windowHeight)
-  if (isPaused) {
-    renderer.render(scene, camera)
-  }
 }
 
-function handleKeyup(event) {
-  if (event.keyCode === 32) {
-    isPaused = !isPaused
-  }
-}
-
-function handleMouseClick(event) {
+function handleMouseDown(event) {
   event.preventDefault()
   const mouse = new THREE.Vector2()
   // Make sure same coordinate system as camera is used
@@ -113,8 +98,7 @@ function handleMouseClick(event) {
 
 function initListeners() {
   window.addEventListener('resize', handleWindowResize)
-  document.addEventListener('keyup', handleKeyup)
-  document.addEventListener('click', handleMouseClick)
+  document.addEventListener('mousedown', handleMouseDown)
 }
 
 function main() {
