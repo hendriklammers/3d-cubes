@@ -1,5 +1,15 @@
 import './styles.css'
-import * as THREE from 'three'
+import {
+  Scene,
+  OrthographicCamera,
+  WebGLRenderer,
+  Mesh,
+  MeshNormalMaterial,
+  BoxGeometry,
+  Vector2,
+  Vector3,
+  Raycaster,
+} from 'three'
 
 let camera
 let scene
@@ -11,9 +21,9 @@ let windowHeight = window.innerHeight
 function initScene() {
   const container = document.querySelector('#container')
 
-  scene = new THREE.Scene()
+  scene = new Scene()
 
-  camera = new THREE.OrthographicCamera(
+  camera = new OrthographicCamera(
     windowWidth / -2,
     windowWidth / 2,
     windowHeight / 2,
@@ -26,7 +36,7 @@ function initScene() {
   camera.lookAt(scene.position)
   scene.add(camera)
 
-  renderer = new THREE.WebGLRenderer()
+  renderer = new WebGLRenderer()
   renderer.setSize(windowWidth, windowHeight)
   renderer.setPixelRatio(window.devicePixelRatio)
   renderer.setClearColor(0x111111)
@@ -43,15 +53,15 @@ function createCubes() {
   const numCubesY = Math.ceil(windowHeight / cubeSize)
   for (let x = 0; x < numCubesX; x++) {
     for (let y = 0; y < numCubesY; y++) {
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize),
-        new THREE.MeshNormalMaterial()
+      const mesh = new Mesh(
+        new BoxGeometry(cubeSize, cubeSize, cubeSize),
+        new MeshNormalMaterial()
       )
       const offsetX = y % 2 === 0 ? spaceX / 2 : 0
       mesh.position.x = (x + 0.5 - numCubesX / 2) * spaceX + offsetX
       mesh.position.y = (y + 0.5 - numCubesY / 2) * spaceY
-      mesh.rotation.y = THREE.Math.DEG2RAD * 45
-      mesh.rotation.x = THREE.Math.DEG2RAD * 45
+      mesh.rotation.y = Math.DEG2RAD * 45
+      mesh.rotation.x = Math.DEG2RAD * 45
       cubes.push(mesh)
       scene.add(mesh)
     }
@@ -63,7 +73,7 @@ function render() {
   requestAnimationFrame(render)
   cubes.forEach(cube => {
     if (cube.userData.animate) {
-      cube.position.add(new THREE.Vector3(0, -1, -1))
+      cube.position.add(new Vector3(0, 1, 1))
     }
   })
   renderer.render(scene, camera)
@@ -82,12 +92,12 @@ function handleWindowResize() {
 
 function handleMouseDown(event) {
   event.preventDefault()
-  const mouse = new THREE.Vector2()
+  const mouse = new Vector2()
   // Make sure same coordinate system as camera is used
   mouse.x = event.clientX / windowWidth * 2 - 1
   mouse.y = -(event.clientY / windowHeight) * 2 + 1
 
-  const raycaster = new THREE.Raycaster()
+  const raycaster = new Raycaster()
   raycaster.setFromCamera(mouse, camera)
 
   const intersects = raycaster.intersectObjects(scene.children)
