@@ -9,6 +9,7 @@ import {
   Vector2,
   Vector3,
   Raycaster,
+  Math as ThreeMath,
 } from 'three'
 
 let camera
@@ -60,8 +61,8 @@ function createCubes() {
       const offsetX = y % 2 === 0 ? spaceX / 2 : 0
       mesh.position.x = (x + 0.5 - numCubesX / 2) * spaceX + offsetX
       mesh.position.y = (y + 0.5 - numCubesY / 2) * spaceY
-      mesh.rotation.y = Math.DEG2RAD * 45
-      mesh.rotation.x = Math.DEG2RAD * 45
+      mesh.rotation.y = ThreeMath.DEG2RAD * 45
+      mesh.rotation.x = ThreeMath.DEG2RAD * 45
       cubes.push(mesh)
       scene.add(mesh)
     }
