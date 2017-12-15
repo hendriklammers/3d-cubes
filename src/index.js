@@ -98,7 +98,6 @@ function checkClicked(cubes) {
       }
     })
   )
-  // console.log(`total: ${total}, clicked: ${count}`)
   return total === count
 }
 
@@ -106,9 +105,6 @@ function animateCube(object) {
   object.userData.animating = true
   const rotation = object.rotation.x + Math.PI * 0.5
   const tl = new TimelineMax({
-    // repeat: 1,
-    // repeatDelay: 1,
-    // yoyo: true,
     onComplete: () => {
       object.userData.animating = false
     },
@@ -180,6 +176,7 @@ function handleMouseMove(event) {
 }
 
 function handleMouseClick(event) {
+  event.preventDefault()
   mouseHit(event)
 }
 
@@ -187,11 +184,56 @@ function render() {
   renderer.render(scene, camera)
 }
 
+// Copy & paste from Stackoverflow FTW
+function handleTouch(event) {
+  const touches = event.changedTouches
+  const first = touches[0]
+  let type = ''
+
+  switch (event.type) {
+    case 'touchstart':
+      type = 'mousedown'
+      break
+    case 'touchmove':
+      type = 'mousemove'
+      break
+    case 'touchend':
+      type = 'mouseup'
+      break
+    default:
+      return
+  }
+
+  const simulatedEvent = document.createEvent('MouseEvent')
+  simulatedEvent.initMouseEvent(
+    type,
+    true,
+    true,
+    window,
+    1,
+    first.screenX,
+    first.screenY,
+    first.clientX,
+    first.clientY,
+    false,
+    false,
+    false,
+    false,
+    0,
+    null
+  )
+
+  first.target.dispatchEvent(simulatedEvent)
+}
+
 function initListeners() {
   window.addEventListener('resize', handleWindowResize)
   document.addEventListener('mousedown', handleMouseDown)
   document.addEventListener('mouseup', handleMouseUp)
   document.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('touchstart', handleTouch)
+  document.addEventListener('touchend', handleTouch)
+  document.addEventListener('touchmove', handleTouch)
   document.addEventListener('click', handleMouseClick)
   TweenMax.ticker.addEventListener('tick', render)
 }
