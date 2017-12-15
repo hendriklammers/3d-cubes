@@ -6,11 +6,11 @@ import {
   Mesh,
   MeshNormalMaterial,
   BoxGeometry,
-  Vector2,
   Vector3,
   Raycaster,
   Math as ThreeMath,
 } from 'three'
+import { TweenLite, Sine } from 'gsap'
 
 let camera
 let scene
@@ -71,12 +71,6 @@ function createCubes() {
 }
 
 function render() {
-  requestAnimationFrame(render)
-  cubes.forEach(cube => {
-    if (cube.userData.animate) {
-      cube.position.add(new Vector3(0, 1, 1))
-    }
-  })
   renderer.render(scene, camera)
 }
 
@@ -93,7 +87,7 @@ function handleWindowResize() {
 
 function handleMouseDown(event) {
   event.preventDefault()
-  const mouse = new Vector2()
+  const mouse = new Vector3()
   // Make sure same coordinate system as camera is used
   mouse.x = event.clientX / windowWidth * 2 - 1
   mouse.y = -(event.clientY / windowHeight) * 2 + 1
@@ -103,19 +97,37 @@ function handleMouseDown(event) {
 
   const intersects = raycaster.intersectObjects(scene.children)
   intersects.forEach(({ object }) => {
-    object.userData.animate = true
+    const rotation = ThreeMath.DEG2RAD * 45 + Math.PI * 0.5
+    TweenLite.to(object.rotation, 0.6, {
+      y: rotation,
+      x: rotation,
+      ease: Sine.easeInOut,
+    })
+    TweenLite.to(object.scale, 0.2, {
+      x: 0.8,
+      y: 0.8,
+      z: 0.8,
+      ease: Sine.easeIn,
+    })
+    TweenLite.to(object.scale, 0.2, {
+      x: 1,
+      y: 1,
+      z: 1,
+      ease: Sine.easeOut,
+      delay: 0.4,
+    })
   })
 }
 
 function initListeners() {
   window.addEventListener('resize', handleWindowResize)
   document.addEventListener('mousedown', handleMouseDown)
+  TweenLite.ticker.addEventListener('tick', render)
 }
 
 function main() {
   initScene()
   initListeners()
-  render()
 }
 
 main()
