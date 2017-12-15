@@ -132,7 +132,7 @@ function handleMouseDown(event) {
   raycaster.setFromCamera(mouse, camera)
 
   const intersects = raycaster.intersectObjects(scene.children)
-  intersects.forEach(animateCube)
+  animateCube(intersects[0])
 }
 
 function render() {
