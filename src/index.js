@@ -10,7 +10,7 @@ import {
   Raycaster,
   Math as ThreeMath,
 } from 'three'
-import { TweenLite, Sine } from 'gsap'
+import { TweenLite, TimelineLite, Sine } from 'gsap'
 
 let camera
 let scene
@@ -98,24 +98,35 @@ function handleMouseDown(event) {
   const intersects = raycaster.intersectObjects(scene.children)
   intersects.forEach(({ object }) => {
     const rotation = ThreeMath.DEG2RAD * 45 + Math.PI * 0.5
-    TweenLite.to(object.rotation, 0.6, {
-      y: rotation,
-      x: rotation,
-      ease: Sine.easeInOut,
-    })
-    TweenLite.to(object.scale, 0.2, {
-      x: 0.8,
-      y: 0.8,
-      z: 0.8,
-      ease: Sine.easeIn,
-    })
-    TweenLite.to(object.scale, 0.2, {
-      x: 1,
-      y: 1,
-      z: 1,
-      ease: Sine.easeOut,
-      delay: 0.4,
-    })
+    const tl = new TimelineLite()
+    tl
+      .to(object.scale, 0.2, {
+        x: 0.8,
+        y: 0.8,
+        z: 0.8,
+        ease: Sine.easeIn,
+      })
+      .to(
+        object.rotation,
+        0.6,
+        {
+          y: rotation,
+          x: rotation,
+          ease: Sine.easeInOut,
+        },
+        0
+      )
+      .to(
+        object.scale,
+        0.2,
+        {
+          x: 1,
+          y: 1,
+          z: 1,
+          ease: Sine.easeOut,
+        },
+        '-=0.2'
+      )
   })
 }
 
