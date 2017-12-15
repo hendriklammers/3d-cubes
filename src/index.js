@@ -70,10 +70,6 @@ function createCubes() {
   return cubes
 }
 
-function render() {
-  renderer.render(scene, camera)
-}
-
 function handleWindowResize() {
   windowWidth = window.innerWidth
   windowHeight = window.innerHeight
@@ -85,20 +81,15 @@ function handleWindowResize() {
   renderer.setSize(windowWidth, windowHeight)
 }
 
-function handleMouseDown(event) {
-  event.preventDefault()
-  const mouse = new Vector3()
-  // Make sure same coordinate system as camera is used
-  mouse.x = event.clientX / windowWidth * 2 - 1
-  mouse.y = -(event.clientY / windowHeight) * 2 + 1
-
-  const raycaster = new Raycaster()
-  raycaster.setFromCamera(mouse, camera)
-
-  const intersects = raycaster.intersectObjects(scene.children)
-  intersects.forEach(({ object }) => {
-    const rotation = ThreeMath.DEG2RAD * 45 + Math.PI * 0.5
-    const tl = new TimelineLite()
+function animateCube({ object }) {
+  if (!object.userData.animating) {
+    object.userData.animating = true
+    const rotation = object.rotation.x + Math.PI * 0.5
+    const tl = new TimelineLite({
+      onComplete: () => {
+        object.userData.animating = false
+      },
+    })
     tl
       .to(object.scale, 0.2, {
         x: 0.8,
@@ -127,7 +118,25 @@ function handleMouseDown(event) {
         },
         '-=0.2'
       )
-  })
+  }
+}
+
+function handleMouseDown(event) {
+  event.preventDefault()
+  const mouse = new Vector3()
+  // Make sure same coordinate system as camera is used
+  mouse.x = event.clientX / windowWidth * 2 - 1
+  mouse.y = -(event.clientY / windowHeight) * 2 + 1
+
+  const raycaster = new Raycaster()
+  raycaster.setFromCamera(mouse, camera)
+
+  const intersects = raycaster.intersectObjects(scene.children)
+  intersects.forEach(animateCube)
+}
+
+function render() {
+  renderer.render(scene, camera)
 }
 
 function initListeners() {
