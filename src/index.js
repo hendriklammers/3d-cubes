@@ -50,10 +50,14 @@ function createCubes() {
   const cubeSize = 100
   const spaceX = Math.sqrt(cubeSize * cubeSize + cubeSize * cubeSize)
   const spaceY = cubeSize * 1.2 // Approximation...
-  const numCubesX = Math.ceil(windowWidth / cubeSize)
-  const numCubesY = Math.ceil(windowHeight / cubeSize)
-  for (let x = 0; x < numCubesX; x++) {
-    for (let y = 0; y < numCubesY; y++) {
+  // TODO: Use bounding box of rotated cube instead of cubesize to calculate
+  // number of cubes
+  const numCubesX = Math.floor(windowWidth / cubeSize)
+  const numCubesY = Math.floor(windowHeight / cubeSize)
+  cubes = []
+  for (let y = 0; y < numCubesY; y++) {
+    cubes.push([])
+    for (let x = 0; x < numCubesX; x++) {
       const mesh = new Mesh(
         new BoxGeometry(cubeSize, cubeSize, cubeSize),
         new MeshNormalMaterial()
@@ -63,11 +67,10 @@ function createCubes() {
       mesh.position.y = (y + 0.5 - numCubesY / 2) * spaceY
       mesh.rotation.y = ThreeMath.DEG2RAD * 45
       mesh.rotation.x = ThreeMath.DEG2RAD * 45
-      cubes.push(mesh)
+      cubes[y].push(mesh)
       scene.add(mesh)
     }
   }
-  return cubes
 }
 
 function handleWindowResize() {
@@ -79,9 +82,14 @@ function handleWindowResize() {
   camera.bottom = windowHeight / -2
   camera.updateProjectionMatrix()
   renderer.setSize(windowWidth, windowHeight)
+  // Remove all cubes from scene and create new ones
+  cubes.forEach(row => {
+    row.forEach(cube => scene.remove(cube))
+  })
+  createCubes()
 }
 
-function animateCube({ object }) {
+function animateCube(object) {
   if (!object.userData.animating) {
     object.userData.animating = true
     const rotation = object.rotation.x + Math.PI * 0.5
@@ -132,7 +140,9 @@ function handleMouseDown(event) {
   raycaster.setFromCamera(mouse, camera)
 
   const intersects = raycaster.intersectObjects(scene.children)
-  animateCube(intersects[0])
+  const cube = intersects[0].object
+  console.log(cube)
+  animateCube(cube)
 }
 
 function render() {
