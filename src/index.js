@@ -47,9 +47,9 @@ function initScene() {
 }
 
 function createCubes() {
-  const cubeSize = Math.floor(windowWidth / 5) * 0.71
-  const spaceX = Math.sqrt(cubeSize * cubeSize + cubeSize * cubeSize)
-  const spaceY = cubeSize * 1.2 // Approximation...
+  const size = Math.floor(windowWidth / 5) * 0.71
+  const spaceX = Math.sqrt(size * size + size * size)
+  const spaceY = size * 1.2 // Approximation...
   const numCubesY = Math.floor(windowHeight / spaceY) + 2
   cubes = []
   for (let y = 0; y < numCubesY; y++) {
@@ -58,14 +58,14 @@ function createCubes() {
     cubes.push([])
     for (let x = 0; x < numCubesX; x++) {
       const mesh = new Mesh(
-        new BoxGeometry(cubeSize, cubeSize, cubeSize),
+        new BoxGeometry(size, size, size),
         new MeshNormalMaterial()
       )
       mesh.position.x = (x + 0.5 - numCubesX / 2) * spaceX
       mesh.position.y = (y + 0.5 - numCubesY / 2) * spaceY
       mesh.rotation.y = ThreeMath.DEG2RAD * 45
       mesh.rotation.x = ThreeMath.DEG2RAD * 45
-      mesh.userData = { x, y }
+      mesh.userData = { x, y, size }
       cubes[y].push(mesh)
       scene.add(mesh)
     }
@@ -86,14 +86,32 @@ function handleWindowResize() {
   createCubes()
 }
 
+function checkClicked(cubes) {
+  let count = 0
+  let total = 0
+  cubes.forEach(row =>
+    row.forEach(cube => {
+      total++
+      if (cube.userData.clicked) {
+        count++
+      }
+    })
+  )
+  // console.log(`total: ${total}, clicked: ${count}`)
+  return total === count
+}
+
 function animateCube(object) {
   object.userData.animating = true
   const rotation = object.rotation.x + Math.PI * 0.5
   const tl = new TimelineMax({
-    repeat: 1,
-    repeatDelay: 1,
-    yoyo: true,
+    // repeat: 1,
+    // repeatDelay: 1,
+    // yoyo: true,
     onComplete: () => {
+      if (checkClicked(cubes)) {
+        console.log('Yay, all cubes rotated!')
+      }
       object.userData.animating = false
     },
   })
@@ -139,9 +157,10 @@ function handleMouseDown(event) {
 
   const intersects = raycaster.intersectObjects(scene.children)
   intersects.forEach(({ object }) => {
-    if (!object.userData.animating) {
-      const { x, y } = object.userData
-      animateCube(cubes[y][x])
+    if (!object.userData.clicked) {
+      // const { x, y } = object.userData
+      animateCube(object)
+      object.userData.clicked = true
       // TODO: Allow dragging and rotate all cubes that are touched
       // Tween back after a certain time
     }
