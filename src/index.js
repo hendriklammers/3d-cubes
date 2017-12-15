@@ -67,6 +67,7 @@ function createCubes() {
       mesh.position.y = (y + 0.5 - numCubesY / 2) * spaceY
       mesh.rotation.y = ThreeMath.DEG2RAD * 45
       mesh.rotation.x = ThreeMath.DEG2RAD * 45
+      mesh.userData = { x, y }
       cubes[y].push(mesh)
       scene.add(mesh)
     }
@@ -90,43 +91,41 @@ function handleWindowResize() {
 }
 
 function animateCube(object) {
-  if (!object.userData.animating) {
-    object.userData.animating = true
-    const rotation = object.rotation.x + Math.PI * 0.5
-    const tl = new TimelineLite({
-      onComplete: () => {
-        object.userData.animating = false
-      },
+  object.userData.animating = true
+  const rotation = object.rotation.x + Math.PI * 0.5
+  const tl = new TimelineLite({
+    onComplete: () => {
+      object.userData.animating = false
+    },
+  })
+  tl
+    .to(object.scale, 0.2, {
+      x: 0.8,
+      y: 0.8,
+      z: 0.8,
+      ease: Sine.easeIn,
     })
-    tl
-      .to(object.scale, 0.2, {
-        x: 0.8,
-        y: 0.8,
-        z: 0.8,
-        ease: Sine.easeIn,
-      })
-      .to(
-        object.rotation,
-        0.6,
-        {
-          y: rotation,
-          x: rotation,
-          ease: Sine.easeInOut,
-        },
-        0
-      )
-      .to(
-        object.scale,
-        0.2,
-        {
-          x: 1,
-          y: 1,
-          z: 1,
-          ease: Sine.easeOut,
-        },
-        '-=0.2'
-      )
-  }
+    .to(
+      object.rotation,
+      0.6,
+      {
+        y: rotation,
+        x: rotation,
+        ease: Sine.easeInOut,
+      },
+      0
+    )
+    .to(
+      object.scale,
+      0.2,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        ease: Sine.easeOut,
+      },
+      '-=0.2'
+    )
 }
 
 function handleMouseDown(event) {
@@ -141,8 +140,11 @@ function handleMouseDown(event) {
 
   const intersects = raycaster.intersectObjects(scene.children)
   const cube = intersects[0].object
-  console.log(cube)
-  animateCube(cube)
+  if (!cube.userData.animating) {
+    console.log(cube.userData)
+    const { x, y } = cube.userData
+    animateCube(cubes[y][x])
+  }
 }
 
 function render() {
