@@ -10,7 +10,7 @@ import {
   Raycaster,
   Math as ThreeMath,
 } from 'three'
-import { TweenLite, TimelineLite, Sine } from 'gsap'
+import { TweenMax, TimelineMax, Sine } from 'gsap'
 
 let camera
 let scene
@@ -47,23 +47,21 @@ function initScene() {
 }
 
 function createCubes() {
-  const cubeSize = 100
+  const cubeSize = Math.floor(windowWidth / 5) * 0.71
   const spaceX = Math.sqrt(cubeSize * cubeSize + cubeSize * cubeSize)
   const spaceY = cubeSize * 1.2 // Approximation...
-  // TODO: Use bounding box of rotated cube instead of cubesize to calculate
-  // number of cubes
-  const numCubesX = Math.floor(windowWidth / cubeSize)
-  const numCubesY = Math.floor(windowHeight / cubeSize)
+  const numCubesY = Math.floor(windowHeight / spaceY) + 2
   cubes = []
   for (let y = 0; y < numCubesY; y++) {
+    let numCubesX = Math.ceil(windowWidth / spaceX)
+    numCubesX += y % 2 === 0 ? 1 : 0
     cubes.push([])
     for (let x = 0; x < numCubesX; x++) {
       const mesh = new Mesh(
         new BoxGeometry(cubeSize, cubeSize, cubeSize),
         new MeshNormalMaterial()
       )
-      const offsetX = y % 2 === 0 ? spaceX / 2 : 0
-      mesh.position.x = (x + 0.5 - numCubesX / 2) * spaceX + offsetX
+      mesh.position.x = (x + 0.5 - numCubesX / 2) * spaceX
       mesh.position.y = (y + 0.5 - numCubesY / 2) * spaceY
       mesh.rotation.y = ThreeMath.DEG2RAD * 45
       mesh.rotation.x = ThreeMath.DEG2RAD * 45
@@ -84,16 +82,17 @@ function handleWindowResize() {
   camera.updateProjectionMatrix()
   renderer.setSize(windowWidth, windowHeight)
   // Remove all cubes from scene and create new ones
-  cubes.forEach(row => {
-    row.forEach(cube => scene.remove(cube))
-  })
+  cubes.forEach(row => row.forEach(cube => scene.remove(cube)))
   createCubes()
 }
 
 function animateCube(object) {
   object.userData.animating = true
   const rotation = object.rotation.x + Math.PI * 0.5
-  const tl = new TimelineLite({
+  const tl = new TimelineMax({
+    repeat: 1,
+    repeatDelay: 1,
+    yoyo: true,
     onComplete: () => {
       object.userData.animating = false
     },
@@ -139,12 +138,14 @@ function handleMouseDown(event) {
   raycaster.setFromCamera(mouse, camera)
 
   const intersects = raycaster.intersectObjects(scene.children)
-  const cube = intersects[0].object
-  if (!cube.userData.animating) {
-    console.log(cube.userData)
-    const { x, y } = cube.userData
-    animateCube(cubes[y][x])
-  }
+  intersects.forEach(({ object }) => {
+    if (!object.userData.animating) {
+      const { x, y } = object.userData
+      animateCube(cubes[y][x])
+      // TODO: Allow dragging and rotate all cubes that are touched
+      // Tween back after a certain time
+    }
+  })
 }
 
 function render() {
@@ -154,7 +155,7 @@ function render() {
 function initListeners() {
   window.addEventListener('resize', handleWindowResize)
   document.addEventListener('mousedown', handleMouseDown)
-  TweenLite.ticker.addEventListener('tick', render)
+  TweenMax.ticker.addEventListener('tick', render)
 }
 
 function main() {
