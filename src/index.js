@@ -18,6 +18,7 @@ let renderer
 let cubes = []
 let windowWidth = window.innerWidth
 let windowHeight = window.innerHeight
+let mousedown = false
 
 function initScene() {
   const container = document.querySelector('#container')
@@ -109,9 +110,6 @@ function animateCube(object) {
     // repeatDelay: 1,
     // yoyo: true,
     onComplete: () => {
-      if (checkClicked(cubes)) {
-        console.log('Yay, all cubes rotated!')
-      }
       object.userData.animating = false
     },
   })
@@ -145,8 +143,7 @@ function animateCube(object) {
     )
 }
 
-function handleMouseDown(event) {
-  event.preventDefault()
+function mouseHit(event) {
   const mouse = new Vector3()
   // Make sure same coordinate system as camera is used
   mouse.x = event.clientX / windowWidth * 2 - 1
@@ -158,13 +155,32 @@ function handleMouseDown(event) {
   const intersects = raycaster.intersectObjects(scene.children)
   intersects.forEach(({ object }) => {
     if (!object.userData.clicked) {
-      // const { x, y } = object.userData
       animateCube(object)
       object.userData.clicked = true
-      // TODO: Allow dragging and rotate all cubes that are touched
-      // Tween back after a certain time
+      if (checkClicked(cubes)) {
+        console.log('Yay, all cubes rotated!')
+      }
     }
   })
+}
+
+function handleMouseDown(event) {
+  event.preventDefault()
+  mousedown = true
+}
+
+function handleMouseUp() {
+  mousedown = false
+}
+
+function handleMouseMove(event) {
+  if (mousedown) {
+    mouseHit(event)
+  }
+}
+
+function handleMouseClick(event) {
+  mouseHit(event)
 }
 
 function render() {
@@ -174,6 +190,9 @@ function render() {
 function initListeners() {
   window.addEventListener('resize', handleWindowResize)
   document.addEventListener('mousedown', handleMouseDown)
+  document.addEventListener('mouseup', handleMouseUp)
+  document.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('click', handleMouseClick)
   TweenMax.ticker.addEventListener('tick', render)
 }
 
