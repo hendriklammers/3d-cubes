@@ -8,11 +8,14 @@
     "clean": "rm -rf public/dist",
     "lint": "eslint src --ext .js",
     "start": "yarn run watch",
-    "watch": "webpack-dev-server",
+    "watch": "webpack-dev-server --hot",
     "deploy": "yarn run clean && mkdir -p public/dist && yarn run build"
   },
   "author": "Hendrik Lammers (www.hendriklammers.com)",
   "license": "MIT",
+  "browserslist": [
+    "last 2 versions"
+  ],
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.34",
     "@babel/polyfill": "^7.0.0-beta.34",
