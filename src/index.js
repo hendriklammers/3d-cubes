@@ -86,7 +86,7 @@ function handleWindowResize() {
   createCubes()
 }
 
-function checkClicked(cubes) {
+function checkActivated(cubes) {
   let count = 0
   let total = 0
   cubes.forEach(cube => {
@@ -147,10 +147,10 @@ function mouseHit(event) {
 
   const intersects = raycaster.intersectObjects(scene.children)
   intersects.forEach(({ object }) => {
-    if (!object.userData.clicked) {
+    if (!object.userData.activated) {
       animateCube(object)
-      object.userData.clicked = true
-      if (checkClicked(cubes)) {
+      object.userData.activated = true
+      if (checkActivated(cubes)) {
         console.log('Yay, all cubes rotated!')
       }
     }
@@ -160,6 +160,7 @@ function mouseHit(event) {
 function handleMouseDown(event) {
   event.preventDefault()
   mousedown = true
+  mouseHit(event)
 }
 
 function handleMouseUp() {
@@ -170,11 +171,6 @@ function handleMouseMove(event) {
   if (mousedown) {
     mouseHit(event)
   }
-}
-
-function handleMouseClick(event) {
-  event.preventDefault()
-  mouseHit(event)
 }
 
 function render() {
@@ -219,7 +215,6 @@ function handleTouch(event) {
     0,
     null
   )
-
   first.target.dispatchEvent(simulatedEvent)
 }
 
@@ -231,7 +226,6 @@ function initListeners() {
   document.addEventListener('touchstart', handleTouch)
   document.addEventListener('touchend', handleTouch)
   document.addEventListener('touchmove', handleTouch)
-  document.addEventListener('click', handleMouseClick)
   TweenMax.ticker.addEventListener('tick', render)
 }
 
