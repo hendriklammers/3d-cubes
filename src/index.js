@@ -56,7 +56,6 @@ function createCubes() {
   for (let y = 0; y < numCubesY; y++) {
     let numCubesX = Math.ceil(windowWidth / spaceX)
     numCubesX += y % 2 === 0 ? 1 : 0
-    cubes.push([])
     for (let x = 0; x < numCubesX; x++) {
       const mesh = new Mesh(
         new BoxGeometry(size, size, size),
@@ -67,7 +66,7 @@ function createCubes() {
       mesh.rotation.y = ThreeMath.DEG2RAD * 45
       mesh.rotation.x = ThreeMath.DEG2RAD * 45
       mesh.userData = { x, y, size }
-      cubes[y].push(mesh)
+      cubes.push(mesh)
       scene.add(mesh)
     }
   }
@@ -83,21 +82,19 @@ function handleWindowResize() {
   camera.updateProjectionMatrix()
   renderer.setSize(windowWidth, windowHeight)
   // Remove all cubes from scene and create new ones
-  cubes.forEach(row => row.forEach(cube => scene.remove(cube)))
+  cubes.forEach(cube => scene.remove(cube))
   createCubes()
 }
 
 function checkClicked(cubes) {
   let count = 0
   let total = 0
-  cubes.forEach(row =>
-    row.forEach(cube => {
-      total++
-      if (cube.userData.clicked) {
-        count++
-      }
-    })
-  )
+  cubes.forEach(cube => {
+    total++
+    if (cube.userData.activated) {
+      count++
+    }
+  })
   return total === count
 }
 
