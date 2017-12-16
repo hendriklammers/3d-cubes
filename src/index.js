@@ -20,11 +20,9 @@ let windowWidth = window.innerWidth
 let windowHeight = window.innerHeight
 let mousedown = false
 
-function initScene() {
+const initScene = () => {
   const container = document.querySelector('#container')
-
   scene = new Scene()
-
   camera = new OrthographicCamera(
     windowWidth / -2,
     windowWidth / 2,
@@ -37,17 +35,15 @@ function initScene() {
   camera.updateProjectionMatrix()
   camera.lookAt(scene.position)
   scene.add(camera)
-
   renderer = new WebGLRenderer()
   renderer.setSize(windowWidth, windowHeight)
   renderer.setPixelRatio(window.devicePixelRatio)
   renderer.setClearColor(0x111111)
   container.appendChild(renderer.domElement)
-
   createCubes()
 }
 
-function createCubes() {
+const createCubes = () => {
   const size = Math.floor(windowWidth / 5) * 0.71
   const spaceX = Math.sqrt(size * size + size * size)
   const spaceY = size * 1.2 // Approximation...
@@ -72,7 +68,7 @@ function createCubes() {
   }
 }
 
-function handleWindowResize() {
+const handleWindowResize = () => {
   windowWidth = window.innerWidth
   windowHeight = window.innerHeight
   camera.left = windowWidth / -2
@@ -86,7 +82,7 @@ function handleWindowResize() {
   createCubes()
 }
 
-function checkActivated(cubes) {
+const checkActivated = cubes => {
   let count = 0
   let total = 0
   cubes.forEach(cube => {
@@ -98,23 +94,30 @@ function checkActivated(cubes) {
   return total === count
 }
 
-function animateCube(object) {
-  object.userData.animating = true
-  const rotation = object.rotation.x + Math.PI * 0.5
+const animateCube = (cube, direction = 1) => {
+  cube.userData.animating = true
+  const rotation = cube.rotation.x + Math.PI * 0.5
   const tl = new TimelineMax({
     onComplete: () => {
-      object.userData.animating = false
+      cube.userData.animating = false
+      if (direction === 1) {
+        cube.userData.activated = true
+        if (checkActivated(cubes)) {
+          animateAll()
+        }
+      } else {
+        cube.userData.activated = false
+      }
     },
   })
-  tl
-    .to(object.scale, 0.2, {
+    .to(cube.scale, 0.2, {
       x: 0.8,
       y: 0.8,
       z: 0.8,
       ease: Sine.easeIn,
     })
     .to(
-      object.rotation,
+      cube.rotation,
       0.6,
       {
         y: rotation,
@@ -124,7 +127,7 @@ function animateCube(object) {
       0
     )
     .to(
-      object.scale,
+      cube.scale,
       0.2,
       {
         x: 1,
@@ -134,55 +137,55 @@ function animateCube(object) {
       },
       '-=0.2'
     )
+  return tl
 }
 
-function mouseHit(event) {
+const animateAll = () => {
+  const tl = new TimelineMax({
+    onComplete: () => {
+      cubes.forEach(cube => (cube.userData.activated = false))
+    },
+  })
+  cubes = shuffleArray(cubes)
+  cubes.forEach(cube => {
+    tl.add(animateCube(cube, -1), '-=0.55')
+  })
+}
+
+const mouseHit = event => {
   const mouse = new Vector3()
   // Make sure same coordinate system as camera is used
   mouse.x = event.clientX / windowWidth * 2 - 1
   mouse.y = -(event.clientY / windowHeight) * 2 + 1
-
   const raycaster = new Raycaster()
   raycaster.setFromCamera(mouse, camera)
-
   const intersects = raycaster.intersectObjects(scene.children)
   intersects.forEach(({ object }) => {
-    if (!object.userData.activated) {
+    if (!object.userData.animating && !object.userData.activated) {
       animateCube(object)
-      object.userData.activated = true
-      if (checkActivated(cubes)) {
-        console.log('Yay, all cubes rotated!')
-      }
     }
   })
 }
 
-function handleMouseDown(event) {
+const handleMouseDown = event => {
   event.preventDefault()
   mousedown = true
   mouseHit(event)
 }
 
-function handleMouseUp() {
-  mousedown = false
-}
+const handleMouseUp = () => (mousedown = false)
 
-function handleMouseMove(event) {
-  if (mousedown) {
-    mouseHit(event)
-  }
-}
+const handleMouseMove = event => (mousedown ? mouseHit(event) : null)
 
-function render() {
-  renderer.render(scene, camera)
-}
+const shuffleArray = arr => arr.sort(() => Math.random() - 0.5)
+
+const render = () => renderer.render(scene, camera)
 
 // Copy & paste from Stackoverflow FTW
-function handleTouch(event) {
+const handleTouch = event => {
   const touches = event.changedTouches
   const first = touches[0]
   let type = ''
-
   switch (event.type) {
     case 'touchstart':
       type = 'mousedown'
@@ -196,7 +199,6 @@ function handleTouch(event) {
     default:
       return
   }
-
   const simulatedEvent = document.createEvent('MouseEvent')
   simulatedEvent.initMouseEvent(
     type,
@@ -218,7 +220,7 @@ function handleTouch(event) {
   first.target.dispatchEvent(simulatedEvent)
 }
 
-function initListeners() {
+const initListeners = () => {
   window.addEventListener('resize', handleWindowResize)
   document.addEventListener('mousedown', handleMouseDown)
   document.addEventListener('mouseup', handleMouseUp)
@@ -229,7 +231,7 @@ function initListeners() {
   TweenMax.ticker.addEventListener('tick', render)
 }
 
-function main() {
+const main = () => {
   initScene()
   initListeners()
 }
