@@ -12,6 +12,9 @@ import {
 } from 'three'
 import { TweenMax, TimelineMax, Sine } from 'gsap'
 
+const DIRECTION_FORWARD = Symbol('forward')
+const DIRECTION_BACKWARD = Symbol('backward')
+
 let camera
 let scene
 let renderer
@@ -44,6 +47,7 @@ const initScene = () => {
 }
 
 const createCubes = () => {
+  // TODO: Number of cubes based on screensize
   const size = Math.floor(windowWidth / 5) * 0.71
   const spaceX = Math.sqrt(size * size + size * size)
   const spaceY = size * 1.2 // Approximation...
@@ -94,19 +98,24 @@ const checkActivated = cubes => {
   return total === count
 }
 
-const animateCube = (cube, direction = 1) => {
+const animateCube = (cube, direction = DIRECTION_FORWARD) => {
   cube.userData.animating = true
   const rotation = cube.rotation.x + Math.PI * 0.5
   const tl = new TimelineMax({
     onComplete: () => {
       cube.userData.animating = false
-      if (direction === 1) {
-        cube.userData.activated = true
-        if (checkActivated(cubes)) {
-          animateAll()
-        }
-      } else {
-        cube.userData.activated = false
+      switch (direction) {
+        case DIRECTION_FORWARD:
+          cube.userData.activated = true
+          if (checkActivated(cubes)) {
+            animateAll()
+          }
+          break
+        case DIRECTION_BACKWARD:
+          cube.userData.activated = false
+          break
+        default:
+          throw new Error('Invalid direction')
       }
     },
   })
@@ -145,10 +154,11 @@ const animateAll = () => {
     onComplete: () => {
       cubes.forEach(cube => (cube.userData.activated = false))
     },
+    delay: 1,
   })
   cubes = shuffleArray(cubes)
   cubes.forEach(cube => {
-    tl.add(animateCube(cube, -1), '-=0.55')
+    tl.add(animateCube(cube, DIRECTION_BACKWARD), '-=0.55')
   })
 }
 
